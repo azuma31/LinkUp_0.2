@@ -196,14 +196,28 @@ class SecureVideoChat {
         this.elements.meetingUrl.value = meetingUrl;
     }
 
-    // PeerJSの初期化
+    // PeerJSの初期化メソッドを変更します
     async initializePeer() {
         try {
             this.encryptionKey = await CryptoUtil.generateKey();
             const exportedKey = await CryptoUtil.exportKey(this.encryptionKey);
             this.elements.encryptionKeyDisplay.value = exportedKey;
 
-            this.peer = new Peer({
+            // カスタムIDの入力を促すアラートを表示
+            const useCustomId = confirm("カスタムIDを使用しますか？");
+            let customId = null;
+
+            if (useCustomId) {
+                customId = prompt("使用したいカスタムIDを入力してください：", "");
+                // キャンセルされた場合やIDが空の場合は自動生成に戻る
+                if (!customId) {
+                    alert("カスタムIDが指定されなかったため、自動生成IDを使用します。");
+                    customId = null;
+                }
+            }
+
+            // PeerJSの初期化（カスタムIDがある場合は指定）
+            this.peer = new Peer(customId, {
                 config: {
                     iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
